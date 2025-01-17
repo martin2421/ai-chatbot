@@ -1,1 +1,1 @@
-# the-stir-ai-chatbot
+# AI Chatbot for The Stir
