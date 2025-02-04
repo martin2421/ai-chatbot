@@ -13,6 +13,10 @@
             margin: 0;
         }
 
+        #clearHistoryButton {
+            margin-right: 10px;
+        }
+
         #chat-circle {
             position: fixed;
             bottom: 50px;
@@ -148,7 +152,8 @@
 
     <div class="chat-box">
         <div class="chat-box-header">
-            ChatBot
+            <button id="clearHistoryButton">Clear</button>
+            <p>Stir Food Chatbot</p>
             <span class="chat-box-toggle"><i class="material-icons">close</i></span>
         </div>
         <div class="chat-box-body">
@@ -173,6 +178,16 @@
             const chatCircle = document.getElementById("chat-circle");
             const chatBox = document.querySelector(".chat-box");
             const chatBoxToggle = document.querySelector(".chat-box-toggle");
+
+            // Clear chat history
+            const clearHistoryButton = document.getElementById("clearHistoryButton");
+            clearHistoryButton.addEventListener("click", () => {
+                localStorage.removeItem("chatHistory");
+                localStorage.removeItem("currentState");
+                messagesContainer.innerHTML = "";
+                statemachine.currentState = "start";
+                statemachine.render();
+            });
 
             // Show/Hide chat box
             chatCircle.addEventListener("click", () => {
