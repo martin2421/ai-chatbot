@@ -333,6 +333,49 @@
         background-color: rgb(216, 128, 122) ;
         }
 
+        .combined-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 300px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .radio-group input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: rgb(136, 38, 27);
+            cursor: pointer;
+        }
+        
+        .dropdown-group {
+            margin: 10px 0;
+        }
+        
+        .dropdown-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
 
 
     </style>
@@ -520,25 +563,6 @@
                     ],
                 },
 
-                "Registered": {
-                    /*Callback function to get the conversation back to where it was*/
-                    "message": "We have a few questions to establish your business state",
-                    "options": [
-                    {
-                        "title": "Esablished",
-                        "next": "established"
-                    },
-                    {
-                        "title": "Scaling up",
-                        "next": "Scaling up"
-                    },
-                    {
-                        "title":"Idea Phase",
-                        "next":"Idea Phase"
-                    }
-                    ],
-                },
-
                 "Unregistered": {
                     "message": "The email or phone number you provided is not in our system. Please try again or start a new conversation",
                     "options": [
@@ -558,23 +582,28 @@
                     "options": [
                         {
                             "title": "Workstation Space",
-                            "next": "workstationSpace",
+                            "next": "Contact Form",
                             "service": "workstationSpace"
                         },
                         {
                             "title": "Kitchen Rental",
-                            "next": "kitchenRental",
+                            "next": "Contact Form",
                             "service": "kitchenRental"
                         },
                         {
                             "title": "Event Venue",
-                            "next": "Event Venue",
+                            "next": "Contact Form",
                             "service": "Event Venue"
                         },
                         {
                             "title": "Business Coach",
-                            "next": "information",
+                            "next": "Contact Form",
                             "service": "Business Coach"
+                        },
+                        {
+                            "title": "Ecommerce",
+                            "next": "Contact Form",
+                            "service": "Ecommerce"
                         },
                         {
                             "title": "Explain Each Service",
@@ -583,52 +612,56 @@
                     ]
                 },
         
-                "workstationSpace": {
+                "First Step": {
                     "message": "The first step to this process is signing up as a The Food Corridor",
                     "options": [
                         {
                             "title": "Next Step",
-                            "next": "Contact Form"
-                        }
-                    ]
-                },
-        
-                "kitchenRental": {
-                    "message": "The first step to this process is signing up as a The Food Corridor",
-                    "options": [
+                            "next": "Check Signed Up"
+                        },
                         {
-                            "title": "Next Step",
-                            "next": "Contact Form"
+                            "title":"Sign up for the Food Corridor here",
+                            "href":"https://app.thefoodcorridor.com/en/signup?default_kitchen=21957"
+                        },
+                        {
+                            "title": "Back",
+                            "back": "services"
                         }
                     ]
                 },
 
                 "Event Venue": {
-                    /*Use checkboxes here*/
-                    "message": "The first step to this process is signing up as a The Food Corridor",
-                    "options": [
-                        {
-                            "type": "checkbox",
-                            "boxes": [
-                                {name: "Indoor", value: "Indoor", id: "Indoor"},
-                                {name: "Outdoor", value: "Outdoor", id: "Outdoor"}
-                            ]
-                        },
-                        {
-                            "title": "Next Step",
-                            "next": "Contact Form"
+                "message": "Event Venues are available in the following types. Please select the type of venue you are looking for.",
+                "options": [
+                    {
+                        "type": "combined-form",
+                        "elements": [
+                            {
+                                "type": "checkbox",
+                                "boxes": [
+                                    {name: "Indoor", value: "Indoor", id: "Indoor"},
+                                    {name: "Outdoor", value: "Outdoor", id: "Outdoor"}
+                                ]
+                            },
+                            {
+                                "type": "dropdown",
+                                "name": "venue_type",
+                                "choices": [
+                                    { value: "Restaurant", label: "Restaurant" },
+                                    { value: "Hall", label: "Hall" },
+                                    { value: "Garden", label: "Garden" }
+                                ]
+                            }
+                        ],
+                        "callback": function(data) {
+                            // Update to match the property names from createCombinedForm
+                            if (data.dropdownValue) {
+                                statemachine.currentState = "Contact Form";
+                                statemachine.render();
+                            }
                         }
-                    ]
-                },
-
-                "Business Coach": {
-                    "message": "The first step to this process is signing up as a The Food Corridor",
-                    "options": [
-                        {
-                            "title": "Next Step",
-                            "next": "Contact Form"
-                        }
-                    ]
+                    }
+                ]
                 },
 
                 "Check Signed Up": {
@@ -655,7 +688,7 @@
                         },
                         {
                             "title": "Back",
-                            "back": "services"
+                            "back": "Check Signed Up"
                         }
                     ]
                 },
@@ -672,7 +705,7 @@
                                 { name: "message", placeholder: "Message" }
                             ],
                             "callback": function(data) {
-                                statemachine.currentState = "Check Signed Up"; // ex. state - Replace with different state after data base check
+                                statemachine.currentState = "First Step"; // ex. state - Replace with different state after data base check
                                 statemachine.render(); // Render the new state
                             }
                         },
@@ -690,51 +723,27 @@
                             "type": "dropdown",
                             "name": "stage",
                             "choices": [
-                                { value: "Idea Phase", label: "Idea Phase" },
-                                { value: "Established", label: "Established" },
-                                { value: "Scaling up", label: "Scaling up" }
+                                { value: "Brand New", label: "Brand New (concept phase, no sales)" },
+                                { value: "Getting Started", label: "Getting Started (some sales, have most legal docs)" },
+                                { value: "Up N Running", label: "Up N Running (selling, have legal docs)"},
+                                { value: "Established", label: "Established (selling, have legal docs)"},
+                                {value: "Other", label: "Other (not a food business)"}
                             ],
                             "callback": function(selectedValue) {
-                                if (selectedValue === "Idea Phase") {
-                                    statemachine.currentState = "Idea Phase";
-                                } else if (selectedValue === "Established") {
-                                    statemachine.currentState = "established";
-                                } else if (selectedValue === "Scaling up") {
-                                    statemachine.currentState = "Scaling up";
+                                if (selectedValue === "Brand New") {
+                                    statemachine.currentState = "information";
+                                } else if (selectedValue === "Getting Started") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if (selectedValue === "Up N Running") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if(selectedValue === "Established") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if(selectedValue === "Other") {
+                                    statemachine.currentState = "information";
                                 }
                                 statemachine.render();
                             }
                         }
-                    ]
-                },
-
-                "established": {
-                    "message": "Well done on being an established business. Please let move to the second phase.",
-                    "options": [
-                        {
-                            "title": "Business Stage",
-                            "next": "Second Phase",
-                        },
-                    ]
-                },
-
-                "Scaling up": {
-                    "message": "Well done on being an Scaling up business. Please let move to the second phase.",
-                    "options": [
-                        {
-                            "title": "Business Stage",
-                            "next": "Second Phase",
-                        },
-                    ]
-                },
-
-                "Idea Phase": {
-                    "message": "It seems as though you're still in the idea phase. Here is some information to help you move forward.",
-                    "options": [
-                        {
-                            "title": "Information",
-                            "next": "information",
-                        },
                     ]
                 },
 
@@ -917,6 +926,11 @@
                         var dropdown = createDropdown(option); // Create a dropdown if the option type is "dropdown"
                         buttoncontainer.appendChild(dropdown); // Append the dropdown to the buttons container
                     }
+
+                    else if (option.type === "combined-form") {  // Add this case
+                        var combinedForm = createCombinedForm(option);
+                        buttoncontainer.appendChild(combinedForm);
+                    }
                     
                     else {
                         var button = document.createElement("button"); // Create a new button element
@@ -1060,7 +1074,7 @@
 
                 var submitButton = document.createElement("button"); // Create a new button element
                 submitButton.type = "submit"; // Set the button type to submit
-                submitButton.innerText = "Submit"; // Set the button text
+                submitButton.innerText = "Let's Get Cooking!"; // Set the button text
                 form.appendChild(submitButton); // Append the button to the form
 
                 return form;
@@ -1163,6 +1177,63 @@
                 });
             
                 return options;
+            }
+
+            function createCombinedForm(option) {
+                var form = document.createElement("form");
+                form.className = "combined-form";
+            
+                // Add radio buttons instead of checkboxes
+                const radioDiv = document.createElement("div");
+                radioDiv.className = "radio-group";
+                
+                option.elements[0].boxes.forEach(box => {
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    input.type = "radio"; // Change to radio instead of checkbox
+                    input.name = "venue_type"; // Same name for all radio buttons in the group
+                    input.value = box.value;
+                    input.id = box.id;
+                    label.appendChild(input);
+                    label.appendChild(document.createTextNode(box.value));
+                    radioDiv.appendChild(label);
+                    radioDiv.appendChild(document.createElement("br"));
+                });
+                form.appendChild(radioDiv);
+            
+                // Add dropdown (unchanged)
+                const dropdownDiv = document.createElement("div");
+                dropdownDiv.className = "dropdown-group";
+                var select = document.createElement("select");
+                select.name = option.elements[1].name;
+                option.elements[1].choices.forEach(choice => {
+                    var optionElement = document.createElement("option");
+                    optionElement.value = choice.value;
+                    optionElement.innerText = choice.label;
+                    select.appendChild(optionElement);
+                });
+                dropdownDiv.appendChild(select);
+                form.appendChild(dropdownDiv);
+            
+                // Add submit button
+                var submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.innerText = "Submit";
+                form.appendChild(submitButton);
+            
+                // Handle form submission
+                form.onsubmit = function(event) {
+                    event.preventDefault();
+                    var selectedValue = form.querySelector('input[type="radio"]:checked');
+                    var dropdownValue = select.value;
+                    
+                    option.callback({
+                        selectedValue: selectedValue ? selectedValue.value : null,
+                        dropdownValue: dropdownValue
+                    });
+                };
+            
+                return form;
             }
             
             statemachine.currentState = "start"; // Set the initial state to start
