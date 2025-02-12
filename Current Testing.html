@@ -347,13 +347,14 @@
         .radio-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
+            margin-bottom: 15px;
         }
         
         .radio-group label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 16px;
             cursor: pointer;
         }
@@ -364,20 +365,19 @@
             accent-color: rgb(136, 38, 27);
             cursor: pointer;
         }
-        
-        .dropdown-group {
-            margin: 10px 0;
+
+        .group-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: rgb(136, 38, 27);
         }
         
-        .dropdown-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
+        .radio-group {
+            margin-bottom: 20px;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 16px;
+            background-color: #f5f5f5;
         }
-
-
     </style>
 </head>
 
@@ -592,7 +592,7 @@
                         },
                         {
                             "title": "Event Venue",
-                            "next": "Contact Form",
+                            "next": "Event Venue",
                             "service": "Event Venue"
                         },
                         {
@@ -637,32 +637,32 @@
                         "type": "combined-form",
                         "elements": [
                             {
-                                "type": "checkbox",
+                                "type": "radio",
+                                "name": "venue_location",  // First radio button group for location
                                 "boxes": [
-                                    {name: "Indoor", value: "Indoor", id: "Indoor"},
-                                    {name: "Outdoor", value: "Outdoor", id: "Outdoor"}
+                                    {name: "venue_location", value: "Indoor", id: "Indoor", label: "Indoor Venue"},
+                                    {name: "venue_location", value: "Outdoor", id: "Outdoor", label: "Outdoor Venue"}
                                 ]
                             },
                             {
-                                "type": "dropdown",
-                                "name": "venue_type",
-                                "choices": [
-                                    { value: "Restaurant", label: "Restaurant" },
-                                    { value: "Hall", label: "Hall" },
-                                    { value: "Garden", label: "Garden" }
+                                "type": "radio",
+                                "name": "venue_capacity",  // Second radio button group for capacity
+                                "boxes": [
+                                    {name: "venue_capacity", value: "0-50", id: "small", label: "0-50 People"},
+                                    {name: "venue_capacity", value: "50-100", id: "medium", label: "50-100 People"},
+                                    {name: "venue_capacity", value: "100-150", id: "large", label: "100-150 People"}
                                 ]
                             }
                         ],
                         "callback": function(data) {
-                            // Update to match the property names from createCombinedForm
-                            if (data.dropdownValue) {
+                            if (data.selectedLocation && data.selectedCapacity) {
                                 statemachine.currentState = "Contact Form";
                                 statemachine.render();
                             }
                         }
                     }
                 ]
-                },
+            },
 
                 "Check Signed Up": {
                     "message": "Are you already signed up as a The Food Corridor?",
@@ -720,25 +720,25 @@
                     "message": "What stage is your business in?",
                     "options": [
                         {
-                            "type": "dropdown",
-                            "name": "stage",
-                            "choices": [
-                                { value: "Brand New", label: "Brand New (concept phase, no sales)" },
-                                { value: "Getting Started", label: "Getting Started (some sales, have most legal docs)" },
-                                { value: "Up N Running", label: "Up N Running (selling, have legal docs)"},
-                                { value: "Established", label: "Established (selling, have legal docs)"},
-                                {value: "Other", label: "Other (not a food business)"}
+                            "type": "radio",
+                            "label": "Business Stage:",
+                            "boxes": [
+                                {name: "business_stage", value: "Brand New", id: "brand_new", label: "Brand New (concept phase, no sales)"},
+                                {name: "business_stage", value: "Getting Started", id: "getting_started", label: "Getting Started (some sales, have most legal docs)"},
+                                {name: "business_stage", value: "Up N Running", id: "up_n_running", label: "Up N Running (selling, have legal docs)"},
+                                {name: "business_stage", value: "Established", id: "established", label: "Established (selling, have legal docs)"},
+                                {name: "business_stage", value: "Other", id: "other", label: "Other (not a food business)"}
                             ],
-                            "callback": function(selectedValue) {
-                                if (selectedValue === "Brand New") {
+                            "callback": function(data) {
+                                if (data.selectedValue === "Brand New") {
                                     statemachine.currentState = "information";
-                                } else if (selectedValue === "Getting Started") {
+                                } else if (data.selectedValue === "Getting Started") {
                                     statemachine.currentState = "Second Phase";
-                                } else if (selectedValue === "Up N Running") {
+                                } else if (data.selectedValue === "Up N Running") {
                                     statemachine.currentState = "Second Phase";
-                                } else if(selectedValue === "Established") {
+                                } else if(data.selectedValue === "Established") {
                                     statemachine.currentState = "Second Phase";
-                                } else if(selectedValue === "Other") {
+                                } else if(data.selectedValue === "Other") {
                                     statemachine.currentState = "information";
                                 }
                                 statemachine.render();
@@ -931,6 +931,11 @@
                         var combinedForm = createCombinedForm(option);
                         buttoncontainer.appendChild(combinedForm);
                     }
+                    // In the render function, add this case
+                    else if (option.type === "radio") {
+                        var radioGroup = createRadioGroup(option);
+                        buttoncontainer.appendChild(radioGroup);
+                    }
                     
                     else {
                         var button = document.createElement("button"); // Create a new button element
@@ -1084,28 +1089,32 @@
             function getCheckboxesForService(service) {
                 if (service === "workstationSpace") {
                     return [
-                        {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
                         {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
                         {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
-                        {name: "Completed Business Plan", value: "Completed Business Plan"}
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "kitchenRental") {
                     return [
                         {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
                         {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
                         {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Completed Business Plan", value: "Completed Business Plan"},
+                        {name:"FoodSafe Certificate", value: "FoodSafe Certificate", id: "FoodSafe Certificate"},
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "Event Venue") {
                     return [
-                    {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
-                        {name: "Insurance", value: "Insurance", id: "Insurance"},
-                        {name: "Security Plan", value: "Security Plan", id: "Security Plan"}
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "Business Coach") {
                     return [
-                        {name: "Business Plan", value: "Business Plan", id: "Business Plan"},
-                        {name: "Financial Plan", value: "Financial Plan", id: "Financial Plan"},
-                        {name: "Marketing Plan", value: "Marketing Plan", id: "Marketing Plan"}
+                        {name: "Makership Conduct Agreement", value: "Makership Conduct Agreement", id: "Makership Conduct Agreement"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 }
                 else if (service === "Food Processing"){
@@ -1163,10 +1172,6 @@
                             break;
                         default:
                             addMessage(`You need to complete your ${item} before proceeding.`, "user");
-                            options.push({
-                                "title": `Complete your ${item}`,
-                                "next": item.replace(/\s+/g, '')
-                            });
                     }
                 });
             
@@ -1183,37 +1188,31 @@
                 var form = document.createElement("form");
                 form.className = "combined-form";
             
-                // Add radio buttons instead of checkboxes
-                const radioDiv = document.createElement("div");
-                radioDiv.className = "radio-group";
-                
-                option.elements[0].boxes.forEach(box => {
-                    var label = document.createElement("label");
-                    var input = document.createElement("input");
-                    input.type = "radio"; // Change to radio instead of checkbox
-                    input.name = "venue_type"; // Same name for all radio buttons in the group
-                    input.value = box.value;
-                    input.id = box.id;
-                    label.appendChild(input);
-                    label.appendChild(document.createTextNode(box.value));
-                    radioDiv.appendChild(label);
-                    radioDiv.appendChild(document.createElement("br"));
+                option.elements.forEach(element => {
+                    if (element.type === "radio") {
+                        const radioDiv = document.createElement("div");
+                        radioDiv.className = "radio-group";
+                        
+                        const groupLabel = document.createElement("div");
+                        groupLabel.className = "group-label";
+                        groupLabel.innerText = element.name === "venue_location" ? "Venue Type:" : "Capacity:";
+                        radioDiv.appendChild(groupLabel);
+                        
+                        element.boxes.forEach(box => {
+                            var label = document.createElement("label");
+                            var input = document.createElement("input");
+                            input.type = "radio";
+                            input.name = box.name;
+                            input.value = box.value;
+                            input.id = box.id;
+                            label.appendChild(input);
+                            label.appendChild(document.createTextNode(box.label || box.value));
+                            radioDiv.appendChild(label);
+                            radioDiv.appendChild(document.createElement("br"));
+                        });
+                        form.appendChild(radioDiv);
+                    }
                 });
-                form.appendChild(radioDiv);
-            
-                // Add dropdown (unchanged)
-                const dropdownDiv = document.createElement("div");
-                dropdownDiv.className = "dropdown-group";
-                var select = document.createElement("select");
-                select.name = option.elements[1].name;
-                option.elements[1].choices.forEach(choice => {
-                    var optionElement = document.createElement("option");
-                    optionElement.value = choice.value;
-                    optionElement.innerText = choice.label;
-                    select.appendChild(optionElement);
-                });
-                dropdownDiv.appendChild(select);
-                form.appendChild(dropdownDiv);
             
                 // Add submit button
                 var submitButton = document.createElement("button");
@@ -1224,15 +1223,64 @@
                 // Handle form submission
                 form.onsubmit = function(event) {
                     event.preventDefault();
-                    var selectedValue = form.querySelector('input[type="radio"]:checked');
-                    var dropdownValue = select.value;
+                    var selectedLocation = form.querySelector('input[name="venue_location"]:checked');
+                    var selectedCapacity = form.querySelector('input[name="venue_capacity"]:checked');
                     
                     option.callback({
-                        selectedValue: selectedValue ? selectedValue.value : null,
-                        dropdownValue: dropdownValue
+                        selectedLocation: selectedLocation ? selectedLocation.value : null,
+                        selectedCapacity: selectedCapacity ? selectedCapacity.value : null
                     });
                 };
             
+                return form;
+            }
+
+            // Function to create radio buttons
+            function createRadioGroup(option) {
+                var form = document.createElement("form");
+                form.className = "radio-form";
+
+                const radioDiv = document.createElement("div");
+                radioDiv.className = "radio-group";
+                
+                // Add group label if provided
+                if (option.label) {
+                    const groupLabel = document.createElement("div");
+                    groupLabel.className = "group-label";
+                    groupLabel.innerText = option.label;
+                    radioDiv.appendChild(groupLabel);
+                }
+                
+                option.boxes.forEach(box => {
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    input.type = "radio";
+                    input.name = box.name;
+                    input.value = box.value;
+                    input.id = box.id;
+                    label.appendChild(input);
+                    label.appendChild(document.createTextNode(box.label || box.value));
+                    radioDiv.appendChild(label);
+                    radioDiv.appendChild(document.createElement("br"));
+                });
+                
+                form.appendChild(radioDiv);
+
+                // Add submit button
+                var submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.innerText = "Submit";
+                form.appendChild(submitButton);
+
+                // Handle form submission
+                form.onsubmit = function(event) {
+                    event.preventDefault();
+                    var selectedValue = form.querySelector('input[type="radio"]:checked');
+                    option.callback({
+                        selectedValue: selectedValue ? selectedValue.value : null
+                    });
+                };
+
                 return form;
             }
             
