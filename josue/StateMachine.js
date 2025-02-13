@@ -126,14 +126,14 @@ export default function StateMachine() {
                 "Unregistered": {
                     "message": "The email or phone number you provided is not in our system. Please try again or start a new conversation",
                     "options": [
-                        {
-                            "title": "Try Again",
-                            "next": "Previous Conversation"
-                        },
-                        {
-                            "title": "Start New Conversation",
-                            "next": "services"
-                        }
+                    {
+                    "title": "Try Again",
+                    "next": "Previous Conversation"
+                    },
+                    {
+                    "title": "Start New Conversation",
+                    "next": "services"
+                    }
                     ],
                 },
 
@@ -142,12 +142,12 @@ export default function StateMachine() {
                     "options": [
                         {
                             "title": "Workstation Space",
-                            "next": "workstationSpace",
+                            "next": "Contact Form",
                             "service": "workstationSpace"
                         },
                         {
                             "title": "Kitchen Rental",
-                            "next": "kitchenRental",
+                            "next": "Contact Form",
                             "service": "kitchenRental"
                         },
                         {
@@ -157,8 +157,13 @@ export default function StateMachine() {
                         },
                         {
                             "title": "Business Coach",
-                            "next": "information",
+                            "next": "Contact Form",
                             "service": "Business Coach"
+                        },
+                        {
+                            "title": "Ecommerce",
+                            "next": "Contact Form",
+                            "service": "Ecommerce"
                         },
                         {
                             "title": "Explain Each Service",
@@ -167,12 +172,20 @@ export default function StateMachine() {
                     ]
                 },
 
-                "workstationSpace": {
+                "First Step": {
                     "message": "The first step to this process is signing up as a The Food Corridor",
                     "options": [
                         {
                             "title": "Next Step",
-                            "next": "Contact Form"
+                            "next": "Check Signed Up"
+                        },
+                        {
+                            "title":"Sign up for the Food Corridor here",
+                            "href":"https://app.thefoodcorridor.com/en/signup?default_kitchen=21957"
+                        },
+                        {
+                            "title": "Back",
+                            "back": "services"
                         }
                     ]
                 },
@@ -188,32 +201,38 @@ export default function StateMachine() {
                 },
 
                 "Event Venue": {
-                    /*Use checkboxes here*/
-                    "message": "The first step to this process is signing up as a The Food Corridor",
-                    "options": [
-                        {
-                            "type": "checkbox",
-                            "boxes": [
-                                { name: "Indoor", value: "Indoor", id: "Indoor" },
-                                { name: "Outdoor", value: "Outdoor", id: "Outdoor" }
-                            ]
-                        },
-                        {
-                            "title": "Next Step",
-                            "next": "Contact Form"
+                "message": "Event Venues are available in the following types. Please select the type of venue you are looking for.",
+                "options": [
+                    {
+                        "type": "combined-form",
+                        "elements": [
+                            {
+                                "type": "radio",
+                                "name": "venue_location",  // First radio button group for location
+                                "boxes": [
+                                    {name: "venue_location", value: "Indoor", id: "Indoor", label: "Indoor Venue"},
+                                    {name: "venue_location", value: "Outdoor", id: "Outdoor", label: "Outdoor Venue"}
+                                ]
+                            },
+                            {
+                                "type": "radio",
+                                "name": "venue_capacity",  // Second radio button group for capacity
+                                "boxes": [
+                                    {name: "venue_capacity", value: "0-50", id: "small", label: "0-50 People"},
+                                    {name: "venue_capacity", value: "50-100", id: "medium", label: "50-100 People"},
+                                    {name: "venue_capacity", value: "100-150", id: "large", label: "100-150 People"}
+                                ]
+                            }
+                        ],
+                        "callback": function(data) {
+                            if (data.selectedLocation && data.selectedCapacity) {
+                                statemachine.currentState = "Contact Form";
+                                statemachine.render();
+                            }
                         }
-                    ]
-                },
-
-                "Business Coach": {
-                    "message": "The first step to this process is signing up as a The Food Corridor",
-                    "options": [
-                        {
-                            "title": "Next Step",
-                            "next": "Contact Form"
-                        }
-                    ]
-                },
+                    }
+                ]
+            },
 
                 "Check Signed Up": {
                     "message": "Are you already signed up as a The Food Corridor?",
@@ -226,6 +245,20 @@ export default function StateMachine() {
                         {
                             "title": "No",
                             "next": "Not Signed up"
+                        }
+                    ]
+                },
+
+                "Not Signed up": {
+                    "message": "You need to sign up as a The Food Corridor to proceed",
+                    "options": [
+                        {
+                            "title": "Press Here to Sign Up",
+                            "href": "https://app.thefoodcorridor.com/en/signup?default_kitchen=21957"
+                        },
+                        {
+                            "title": "Back",
+                            "back": "Check Signed Up"
                         }
                     ]
                 },
@@ -266,54 +299,30 @@ export default function StateMachine() {
                     "message": "What stage is your business in?",
                     "options": [
                         {
-                            "type": "dropdown",
-                            "name": "stage",
-                            "choices": [
-                                { value: "Idea Phase", label: "Idea Phase" },
-                                { value: "Established", label: "Established" },
-                                { value: "Scaling up", label: "Scaling up" }
+                            "type": "radio",
+                            "label": "Business Stage:",
+                            "boxes": [
+                                {name: "business_stage", value: "Brand New", id: "brand_new", label: "Brand New (concept phase, no sales)"},
+                                {name: "business_stage", value: "Getting Started", id: "getting_started", label: "Getting Started (some sales, have most legal docs)"},
+                                {name: "business_stage", value: "Up N Running", id: "up_n_running", label: "Up N Running (selling, have legal docs)"},
+                                {name: "business_stage", value: "Established", id: "established", label: "Established (selling, have legal docs)"},
+                                {name: "business_stage", value: "Other", id: "other", label: "Other (not a food business)"}
                             ],
-                            "callback": function (selectedValue) {
-                                if (selectedValue === "Idea Phase") {
-                                    statemachine.currentState = "Idea Phase";
-                                } else if (selectedValue === "Established") {
-                                    statemachine.currentState = "established";
-                                } else if (selectedValue === "Scaling up") {
-                                    statemachine.currentState = "Scaling up";
+                            "callback": function(data) {
+                                if (data.selectedValue === "Brand New") {
+                                    statemachine.currentState = "information";
+                                } else if (data.selectedValue === "Getting Started") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if (data.selectedValue === "Up N Running") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if(data.selectedValue === "Established") {
+                                    statemachine.currentState = "Second Phase";
+                                } else if(data.selectedValue === "Other") {
+                                    statemachine.currentState = "information";
                                 }
                                 statemachine.render();
                             }
                         }
-                    ]
-                },
-
-                "established": {
-                    "message": "Well done on being an established business. Please let move to the second phase.",
-                    "options": [
-                        {
-                            "title": "Business Stage",
-                            "next": "Second Phase",
-                        },
-                    ]
-                },
-
-                "Scaling up": {
-                    "message": "Well done on being an Scaling up business. Please let move to the second phase.",
-                    "options": [
-                        {
-                            "title": "Business Stage",
-                            "next": "Second Phase",
-                        },
-                    ]
-                },
-
-                "Idea Phase": {
-                    "message": "It seems as though you're still in the idea phase. Here is some information to help you move forward.",
-                    "options": [
-                        {
-                            "title": "Information",
-                            "next": "information",
-                        },
                     ]
                 },
 
@@ -322,7 +331,7 @@ export default function StateMachine() {
                     "options": [
                         {
                             "type": "checkbox",
-                            "boxes": function () {
+                            "boxes": function() {
                                 return getCheckboxesForService(statemachine.selectedService);
                             }
                         }
@@ -332,10 +341,10 @@ export default function StateMachine() {
                 "information": {
                     "message": "Please contact our support team directly for further assistance.",
                     "options": [
-                        {
-                            "title": "Back",
-                            "back": "start"
-                        }]
+                    {
+                        "title":"Back",
+                        "back":"start"
+                    }]
                 },
 
                 "defaultState": {
@@ -375,29 +384,10 @@ export default function StateMachine() {
                 "Food Form": {
                     "message": "Please fill out the form below so we can keep track of this conversation.",
                     "options": [
-                        /*{
+                        {
                             "type": "checkbox",
                             "boxes": function() {
                                     return getCheckboxesForService(statemachine.selectedService);
-                            }
-                        },*/
-                        {
-                            "type": "dropdown",
-                            "name": "stage",
-                            "choices": [
-                                { value: "Idea Phase", label: "Idea Phase" },
-                                { value: "Established", label: "Established" },
-                                { value: "Scaling up", label: "Scaling up" }
-                            ],
-                            "callback": function (selectedValue) {
-                                if (selectedValue === "Idea Phase") {
-                                    statemachine.currentState = "Idea Phase";
-                                } else if (selectedValue === "Established") {
-                                    statemachine.currentState = "established";
-                                } else if (selectedValue === "Scaling up") {
-                                    statemachine.currentState = "Scaling up";
-                                }
-                                statemachine.render();
                             }
                         },
                     ]
@@ -405,8 +395,8 @@ export default function StateMachine() {
 
                 // Then update the handleUnchecked state to use this function:
                 "handleUnchecked": {
-                    "message": "You have some unchecked items. Please address them.",
-                    "render": function (uncheckedItems) {
+                    "message": "Please read the following requirement",  // Remove message from here
+                    "render": function(uncheckedItems) {
                         return handleUncheckedItems(uncheckedItems);
                     },
                     "options": []
@@ -487,7 +477,7 @@ export default function StateMachine() {
                         var form = createForm(option, i); // Create a form if the option type is "form"
                         buttoncontainer.appendChild(form); // Append the form to the buttons container
                     }
-
+                    
                     else if (option.type === "checkbox") {
                         var checkbox = createCheckbox(option.boxes()); // Create a checkbox if the option type is "checkbox"
                         buttoncontainer.appendChild(checkbox); // Append the checkbox to the buttons container
@@ -498,6 +488,16 @@ export default function StateMachine() {
                         buttoncontainer.appendChild(dropdown); // Append the dropdown to the buttons container
                     }
 
+                    else if (option.type === "combined-form") {  // Add this case
+                        var combinedForm = createCombinedForm(option);
+                        buttoncontainer.appendChild(combinedForm);
+                    }
+                    // In the render function, add this case
+                    else if (option.type === "radio") {
+                        var radioGroup = createRadioGroup(option);
+                        buttoncontainer.appendChild(radioGroup);
+                    }
+                    
                     else {
                         var button = document.createElement("button"); // Create a new button element
                         button.className = "titles"; // Set the class name for the button
@@ -509,29 +509,33 @@ export default function StateMachine() {
 
                 chatLogs.appendChild(buttoncontainer); // Append the buttons container to the chat logs
 
-                // If the current state is "handleUnchecked", render the unchecked states
+                // Update the render function's handleUnchecked section
                 if (this.currentState === "handleUnchecked" && this.uncheckedStates) {
-
-                    // Get the additional options for unchecked items
                     const additionalOptions = currentState.render(this.uncheckedStates);
-
-                    // Create buttons for each additional option
-                    additionalOptions.forEach((option, i) => {
+                    
+                    additionalOptions.forEach((option) => {
                         var button = document.createElement("button");
                         button.className = "titles";
                         button.innerText = option.title;
-                        button.onclick = () => {
-                            if (option.href) {
-                                window.open(option.href, "_blank");
-                            } else if (option.back) {
-                                this.currentState = option.back;
-                                this.render();
-                            }
-                        };
+                        
+                        if (option.title === "Next Requirement") {
+                            button.onclick = () => {
+                                statemachine.currentUncheckedIndex++;
+                                statemachine.render();
+                            };
+                        } else if (option.href) {
+                            button.onclick = () => window.open(option.href, "_blank");
+                        } else if (option.back) {
+                            button.onclick = () => {
+                                statemachine.currentState = option.back;
+                                statemachine.render();
+                            };
+                        }
+                        
                         buttoncontainer.appendChild(button);
                     });
                 }
-            }
+            };
 
 
             // Function to add a message to the chat logs
@@ -656,58 +660,67 @@ export default function StateMachine() {
             function getCheckboxesForService(service) {
                 if (service === "workstationSpace") {
                     return [
-                        { name: "Interior Health", value: "Interior Health", id: "Interior Health" },
-                        { name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License" },
-                        { name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance" },
-                        { name: "Completed Business Plan", value: "Completed Business Plan" }
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "kitchenRental") {
                     return [
-                        { name: "Interior Health", value: "Interior Health", id: "Interior Health" },
-                        { name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License" },
-                        { name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance" },
+                        {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Completed Business Plan", value: "Completed Business Plan"},
+                        {name:"FoodSafe Certificate", value: "FoodSafe Certificate", id: "FoodSafe Certificate"},
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "Event Venue") {
                     return [
-                        { name: "Interior Health", value: "Interior Health", id: "Interior Health" },
-                        { name: "Insurance", value: "Insurance", id: "Insurance" },
-                        { name: "Security Plan", value: "Security Plan", id: "Security Plan" }
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Makership Membership", value: "Makership Membership", id: "Makership Membership"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 } else if (service === "Business Coach") {
                     return [
-                        { name: "Business Plan", value: "Business Plan", id: "Business Plan" },
-                        { name: "Financial Plan", value: "Financial Plan", id: "Financial Plan" },
-                        { name: "Marketing Plan", value: "Marketing Plan", id: "Marketing Plan" }
+                        {name: "Makership Conduct Agreement", value: "Makership Conduct Agreement", id: "Makership Conduct Agreement"},
+                        {name: "Stir Maker Fee", value: "Stir Maker Fee", id: "Stir Maker Fee"}
                     ];
                 }
-                else if (service === "Food Processing") {
+                else if (service === "Food Processing"){
                     return [
-                        { name: "Interior Health", value: "Interior Health", id: "Interior Health" },
-                        { name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License" },
-                        { name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance" },
-                        { name: "Completed Business Plan", value: "Completed Business Plan" }
+                        {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Completed Business Plan", value: "Completed Business Plan"}
                     ];
                 }
-                else if (service === "Food Service") {
+                else if (service === "Food Service"){
                     return [
-                        { name: "Interior Health", value: "Interior Health", id: "Interior Health" },
-                        { name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License" },
-                        { name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance" },
-                        { name: "Completed Business Plan", value: "Completed Business Plan" }
+                        {name: "Interior Health", value: "Interior Health", id: "Interior Health"},
+                        {name: "City of Kamloops Business License", value: "City of Kamloops Business License", id: "City of Kamloops Business License"},
+                        {name: "Commercial Insurance", value: "Commercial Insurance", id: "Commercial Insurance"},
+                        {name: "Completed Business Plan", value: "Completed Business Plan"}
                     ];
-                }
+                }  
                 else {
                     return [];
                 }
             }
 
 
-            //-------
-            function handleUncheckedItems(uncheckedItems) {
-                let options = [];
+            // Add a property to track current unchecked item
+            statemachine.currentUncheckedIndex = 0;
 
-                uncheckedItems.forEach(item => {
-                    switch (item) {
+            // Modify the handleUncheckedItems function
+            function handleUncheckedItems(uncheckedItems) {        
+                const options = [];
+
+                if (statemachine.currentUncheckedIndex < uncheckedItems.length) {
+                    const item = uncheckedItems[statemachine.currentUncheckedIndex];
+                    
+                    switch(item) {
                         case "Commercial Insurance":
                             addMessage("You need insurance to protect your business. Here are some local insurance providers:", "user");
                             options.push(
@@ -737,20 +750,75 @@ export default function StateMachine() {
                             break;
                         default:
                             addMessage(`You need to complete your ${item} before proceeding.`, "user");
-                            options.push({
-                                "title": `Complete your ${item}`,
-                                "next": item.replace(/\s+/g, '')
-                            });
                     }
-                });
 
-                // Add the back button as the last option
-                options.push({
-                    "title": "Back",
-                    "back": "Second Phase"
-                });
+                    // Update the Next Requirement button
+                    options.push({
+                        "title": "Next Requirement",
+                        "callback": function() {
+                            statemachine.currentUncheckedIndex++;
+                            statemachine.currentState = "handleUnchecked";
+                            statemachine.render();
+                        }
+                    });
+                } else {
+                    statemachine.currentUncheckedIndex = 0;
+                    options.push({
+                        "title": "Back",
+                        "back": "Second Phase"
+                    });
+                }
 
                 return options;
+            }
+
+            // Function to create radio buttons
+            function createRadioGroup(option) {
+                var form = document.createElement("form");
+                form.className = "radio-form";
+
+                const radioDiv = document.createElement("div");
+                radioDiv.className = "radio-group";
+                
+                // Add group label if provided
+                if (option.label) {
+                    const groupLabel = document.createElement("div");
+                    groupLabel.className = "group-label";
+                    groupLabel.innerText = option.label;
+                    radioDiv.appendChild(groupLabel);
+                }
+                
+                option.boxes.forEach(box => {
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    input.type = "radio";
+                    input.name = box.name;
+                    input.value = box.value;
+                    input.id = box.id;
+                    label.appendChild(input);
+                    label.appendChild(document.createTextNode(box.label || box.value));
+                    radioDiv.appendChild(label);
+                    radioDiv.appendChild(document.createElement("br"));
+                });
+                
+                form.appendChild(radioDiv);
+
+                // Add submit button
+                var submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.innerText = "Submit";
+                form.appendChild(submitButton);
+
+                // Handle form submission
+                form.onsubmit = function(event) {
+                    event.preventDefault();
+                    var selectedValue = form.querySelector('input[type="radio"]:checked');
+                    option.callback({
+                        selectedValue: selectedValue ? selectedValue.value : null
+                    });
+                };
+
+                return form;
             }
 
 

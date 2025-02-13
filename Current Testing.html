@@ -835,11 +835,11 @@
                 
                 // Then update the handleUnchecked state to use this function:
                 "handleUnchecked": {
-                    "message": "You have some unchecked items. Please address them.",
+                    "message": "Please read the following requirement",  // Remove message from here
                     "render": function(uncheckedItems) {
                         return handleUncheckedItems(uncheckedItems);
                     },
-                "options": []
+                    "options": []
                 },
             };
 
@@ -948,29 +948,33 @@
 
                 chatLogs.appendChild(buttoncontainer); // Append the buttons container to the chat logs
 
-                 // If the current state is "handleUnchecked", render the unchecked states
+                 // Update the render function's handleUnchecked section
                 if (this.currentState === "handleUnchecked" && this.uncheckedStates) {
-                    
-                    // Get the additional options for unchecked items
                     const additionalOptions = currentState.render(this.uncheckedStates);
                     
-                    // Create buttons for each additional option
-                    additionalOptions.forEach((option, i) => {
-                    var button = document.createElement("button");
-                    button.className = "titles";
-                    button.innerText = option.title;
-                    button.onclick = () => {
-                        if (option.href) {
-                            window.open(option.href, "_blank");
+                    additionalOptions.forEach((option) => {
+                        var button = document.createElement("button");
+                        button.className = "titles";
+                        button.innerText = option.title;
+                        
+                        if (option.title === "Next Requirement") {
+                            button.onclick = () => {
+                                statemachine.currentUncheckedIndex++;
+                                statemachine.render();
+                            };
+                        } else if (option.href) {
+                            button.onclick = () => window.open(option.href, "_blank");
                         } else if (option.back) {
-                            this.currentState = option.back;
-                            this.render();
+                            button.onclick = () => {
+                                statemachine.currentState = option.back;
+                                statemachine.render();
+                            };
                         }
-                    };
-                    buttoncontainer.appendChild(button);
+                        
+                        buttoncontainer.appendChild(button);
                     });
                 }
-            }
+            };
 
             // Function to add a message to the chat logs
             function addMessage(msg, type) {
@@ -1138,10 +1142,16 @@
                 }
             }
 
-            function handleUncheckedItems(uncheckedItems) {
-                let options = [];
-                
-                uncheckedItems.forEach(item => {
+            // Add a property to track current unchecked item
+            statemachine.currentUncheckedIndex = 0;
+
+            // Modify the handleUncheckedItems function
+            function handleUncheckedItems(uncheckedItems) {        
+                const options = [];
+
+                if (statemachine.currentUncheckedIndex < uncheckedItems.length) {
+                    const item = uncheckedItems[statemachine.currentUncheckedIndex];
+                    
                     switch(item) {
                         case "Commercial Insurance":
                             addMessage("You need insurance to protect your business. Here are some local insurance providers:", "user");
@@ -1173,14 +1183,24 @@
                         default:
                             addMessage(`You need to complete your ${item} before proceeding.`, "user");
                     }
-                });
-            
-                // Add the back button as the last option
-                options.push({
-                    "title": "Back",
-                    "back": "Second Phase"
-                });
-            
+
+                    // Update the Next Requirement button
+                    options.push({
+                        "title": "Next Requirement",
+                        "callback": function() {
+                            statemachine.currentUncheckedIndex++;
+                            statemachine.currentState = "handleUnchecked";
+                            statemachine.render();
+                        }
+                    });
+                } else {
+                    statemachine.currentUncheckedIndex = 0;
+                    options.push({
+                        "title": "Back",
+                        "back": "Second Phase"
+                    });
+                }
+
                 return options;
             }
 
